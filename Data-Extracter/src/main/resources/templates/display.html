@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Project2 Broztek</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f2f2f2;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            padding: 0 20px;
+        }
+        .chart-container {
+            width: calc(70% - 20px);
+            margin-right: 20px;
+            height: 400px;
+        }
+        #deviceDetails {
+            width: 30%;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        #deviceDetails h2 {
+            margin-bottom: 10px;
+            font-size: 20px;
+            color: #333;
+            text-align: center;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 10px;
+        }
+        #deviceDetails ul {
+            padding: 0;
+        }
+        #deviceDetails li {
+            margin-bottom: 20px;
+            list-style-type: none;
+        }
+        #deviceDetails li span.label {
+            font-weight: bold;
+            color: #666;
+            display: inline-block;
+            width: 150px;
+        }
+        #deviceDetails li span.value {
+            color: #333;
+            display: inline-block;
+            margin-left: 10px;
+            word-break: break-all;
+        }
+        .chart-info {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #666;
+            text-align: center;
+        }
+        /* Form styles */
+        form {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        select {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            appearance: none;
+            background-image: url('data:image/svg+xml;utf8,<svg fill="#666" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>');
+            background-position: right 10px center;
+            background-repeat: no-repeat;
+            outline: none; /* Remove default focus outline */
+        }
+        button[type="submit"] {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="chart-container">
+            <h1>Project2 Broztek</h1>
+            <form action="/display" method="post">
+                <select name="serialNumber" multiple>
+                    <option th:each="serialNumber : ${distinctSerialNumbers}" th:value="${serialNumber}" th:text="${serialNumber}">Serial Numbers</option>
+                </select>
+                <br>
+                <button type="submit"><i class="fas fa-chart-line"></i> Display Data</button>
+            </form>
+            <canvas id="temperatureChart"></canvas>
+            <div class="chart-info">
+              
+            </div>
+        </div>
+        <!-- Device details section -->
+        <div id="deviceDetails">
+            <h2>Device Details</h2>
+            <div th:each="pdfDataList, idx : ${pdfDataLists}">
+             
+                <ul>
+                    <li th:each="pdfData : ${pdfDataList}">
+                       <h3 th:text="'Device Details for Serial ' + ${pdfData.serialNumber}"></h3>
+                        <span class="label">Serial Number:</span>
+                        <span class="value" th:text="${pdfData.serialNumber}"></span><br>
+                        <span class="label">Firmware Version:</span>
+                        <span class="value" th:text="${pdfData.firmwareVersion}"></span><br>
+                        <span class="label">Log Cycle:</span>
+                        <span class="value" th:text="${pdfData.logCycle}"></span><br>
+                        <span class="label">Log Interval:</span>
+                        <span class="value" th:text="${pdfData.logInterval}"></span><br>
+                        <span class="label">First Log:</span>
+                        <span class="value" th:text="${pdfData.firstLog}"></span><br>
+                        <span class="label">Last Log:</span>
+                        <span class="value" th:text="${pdfData.lastLog}"></span><br>
+                        <span class="label">Duration Time:</span>
+                        <span class="value" th:text="${pdfData.durationTime}"></span><br>
+                        <span class="label">Data Points:</span>
+                        <span class="value" th:text="${pdfData.dataPoints}"></span><br>
+                        <span class="label">Start Mode:</span>
+                        <span class="value" th:text="${pdfData.startMode}"></span><br>
+                        <span class="label">Start Delay:</span>
+                        <span class="value" th:text="${pdfData.startDelay}"></span><br>
+                        <span class="label">Stop Mode:</span>
+                        <span class="value" th:text="${pdfData.stopMode}"></span><br>
+                        <span class="label">Highest Temperature:</span>
+                        <span class="value" th:text="${pdfData.highestTemperature}"></span><br>
+                        <span class="label">Lowest Temperature:</span>
+                        <span class="value" th:text="${pdfData.lowestTemperature}"></span><br>
+                        <span class="label">Average Temperature:</span>
+                        <span class="value" th:text="${pdfData.averageTemperature}"></span><br>
+                        <span class="label">MKT:</span>
+                        <span class="value" th:text="${pdfData.mkt}"></span><br>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3"></script>
+    <script src="https://cdn.jsdelivr.net/npm/moment@^2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment@^1"></script>
+    <script th:inline="javascript">
+  
+    /*<![CDATA[*/
+    var temperatureDataLists = /*[[${temperatureDataLists}]]*/ ;
+
+    var timeLabels = [];
+
+    if (temperatureDataLists) {
+        var datasets = [];
+
+        temperatureDataLists.forEach(function(temperatureDataList, index) {
+            var tempTimeLabels = temperatureDataList.map(function(data) {
+                return moment(data.dateTime, 'DD/MM/YY HH:mm:ss');
+            });
+            
+            // Concatenate timeLabels with tempTimeLabels
+            timeLabels = timeLabels.concat(tempTimeLabels);
+
+            var temperatureValues = temperatureDataList.map(function(data) {
+                return data.temperature;
+            });
+
+            datasets.push({
+                label: 'Temperature (°C) - Serial ' + (index + 1),
+                data: temperatureValues,
+                borderColor: 'rgb(' + getRandomInt(0, 255) + ', ' + getRandomInt(0, 255) + ', ' + getRandomInt(0, 255) + ')',
+                fill: false,
+                tension: 0,
+            });
+        });
+
+        var ctx = document.getElementById('temperatureChart').getContext('2d');
+        var chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: timeLabels,
+                datasets: datasets
+            },
+            options: {
+                scales: {
+                    x: {
+                        type: 'time',
+                        time: {
+                            unit: 'minute',
+                            stepSize: 10
+                        },
+                        title: {
+                            display: true,
+                            text: 'Time'
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Temperature (°C)'
+                        }
+                    }
+                }
+            }
+        });
+
+        function getRandomInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+    }
+    /*]]>*/
+</script>
+</body>
+</html>
